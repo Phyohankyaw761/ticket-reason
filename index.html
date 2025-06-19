@@ -14,8 +14,9 @@
 </head>
 <body>
   <h2>🔍 CC Ticket RCA</h2>
-<h3 style="color: green; text-align: left; margin-top: 0;">Powered by FBB_YGN</h3>
-  <input type="text" id="searchInput" placeholder="Search by Account" />
+  <h3 style="color: green; text-align: left; margin-top: 0;">Powered by FBB_YGN</h3>
+
+  <input type="text" id="searchInput" placeholder="Search by Subscribers, Station code or RCA" />
   <button onclick="search()">Search</button>
 
   <div id="result" class="result" style="display:none;"></div>
@@ -23,41 +24,51 @@
   <script>
     let csvData = [];
 
+    // Load CSV data
     Papa.parse("data.csv", {
       download: true,
       header: true,
+      skipEmptyLines: true,
       complete: function(results) {
         csvData = results.data;
+        console.log("CSV Loaded:", csvData); // for debugging
       }
     });
 
-function search() {
-  const query = document.getElementById("searchInput").value.trim().toLowerCase();
-  const resultDiv = document.getElementById("result");
+    function search() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      const resultDiv = document.getElementById("result");
 
-  const matches = csvData.filter(row =>
-    (row["Account"] || "").toLowerCase().includes(query) ||
-    (row["Subscriber node"] || "").toLowerCase().includes(query) ||
-    (row["ONT serial"] || "").toLowerCase().includes(query)
-  );
+      if (query === "") {
+        resultDiv.innerHTML = "<em>Please type something to search.</em>";
+        resultDiv.style.display = "block";
+        return;
+      }
 
-  if (matches.length > 0) {
-    resultDiv.innerHTML = matches.map(match => `
-      <div style="margin-bottom: 15px;">
-        <div><strong>Account:</strong> ${match["Subscribers"]}</div>
-        <div><strong>Subscriber Name:</strong> ${match["Month"]}</div>
-        <div><strong>Phone Number:</strong> ${match["Station code"]}</div>
-        <div><strong>Address:</strong> ${match["RCA"]}</div>
-        <hr/>
-      </div>
-    `).join('');
-    resultDiv.style.display = "block";
-  } else {
-    resultDiv.innerHTML = "<em>No results found.</em>";
-    resultDiv.style.display = "block";
-  }
-}
+      const matches = csvData.filter(row =>
+        (row["Subscribers"] || "").toLowerCase().includes(query) ||
+        (row["Station code"] || "").toLowerCase().includes(query) ||
+        (row["RCA"] || "").toLowerCase().includes(query)
+      );
 
+      if (matches.length > 0) {
+        resultDiv.innerHTML = matches.map(match => `
+          <div style="margin-bottom: 15px;">
+            <div><strong>Subscribers:</strong> ${match["Subscribers"]}</div>
+            <div><strong>Unit:</strong> ${match["Create unit name"]}</div>
+            <div><strong>FT Accepted Time:</strong> ${match["FT accepted time"]}</div>
+            <div><strong>Month:</strong> ${match["Month"]}</div>
+            <div><strong>Station Code:</strong> ${match["Station code"]}</div>
+            <div><strong>RCA:</strong> ${match["RCA"]}</div>
+            <hr/>
+          </div>
+        `).join('');
+        resultDiv.style.display = "block";
+      } else {
+        resultDiv.innerHTML = "<em>No results found.</em>";
+        resultDiv.style.display = "block";
+      }
+    }
   </script>
 </body>
 </html>
